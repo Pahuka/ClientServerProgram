@@ -18,51 +18,21 @@ public class ClientService
 	public int Port { get; set; }
 	public bool IsConnected { get; set; }
 
-	//private void Listener()
-	//{
-	//	Task.Run(() =>
-	//	{
-	//		while (true)
-	//			try
-	//			{
-	//				if (_client?.Connected == true)
-	//				{
-	//					var line = _reader?.ReadLine();
-	//					if (line != null)
-	//					{
-	//						_message += line + "\n";
-	//					}
-	//					else
-	//					{
-	//						_client.Close();
-	//						_message += "Connected error.\n";
-	//					}
-	//				}
-
-	//				Task.Delay(10).Wait();
-	//			}
-	//			catch (Exception ex)
-	//			{
-	//				_message += ex.Message + "\n";
-	//			}
-	//	});
-	//}
-
-	public async Task<string> ConnectCommand()
+	public async Task<string> Connect()
 	{
 		try
 		{
+			Disconnect();
 			_client = new TcpClient();
 			await _client.ConnectAsync(Host, Port);
 			_reader = new StreamReader(_client.GetStream());
 			_writer = new StreamWriter(_client.GetStream());
-			//Listener();
 			_writer.AutoFlush = true;
 
 			_writer.WriteLine("Connect");
 			IsConnected = true;
 		}
-		catch (SocketException e)
+		catch (Exception e)
 		{
 			IsConnected = false;
 			return e.Message;
@@ -71,11 +41,26 @@ public class ClientService
 		return await _reader?.ReadLineAsync();
 	}
 
+	public string Disconnect()
+	{
+		try
+		{
+			if (IsConnected)
+				_client.Close();
+		}
+		catch (Exception e)
+		{
+			return e.Message;
+		}
+
+		return "Disconnect";
+	}
+
 	public async Task<string> Send(string msg)
 	{
 		try
 		{
-			if(IsConnected)
+			if (IsConnected)
 				_writer?.WriteLineAsync(msg);
 		}
 		catch (Exception e)

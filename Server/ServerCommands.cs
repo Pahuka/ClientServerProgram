@@ -17,43 +17,59 @@ public class ServerCommands
 		{
 			client = listener.AcceptTcpClient();
 
-			Task.Factory.StartNew(() =>
-			{
-				var sr = new StreamReader(client.GetStream());
-				var sw = new StreamWriter(client.GetStream());
-				sw.AutoFlush = true;
-				var serverCommandType = typeof(ServerCommands);
+			var sr = new StreamReader(client.GetStream());
+			var sw = new StreamWriter(client.GetStream());
+			sw.AutoFlush = true;
+			var serverCommandType = typeof(ServerCommands);
 
-				while (client.Connected)
-					try
+			while (client.Connected)
+				try
+				{
+					var line = sr.ReadLine();
+
+					if (line == null)
 					{
-						var line = sr.ReadLine();
-
-						Console.WriteLine(line);
-
-						var serverMethod = serverCommandType.GetMethod(line);
-						if (serverMethod != null)
-						{
-							sw.WriteLine($"Сервер выполняет метод {line}");
-							line = (string)serverMethod.Invoke(this, null);
-						}
-
-						if(line.Equals("Connect"))
-							sw.WriteLine("Connected");
-						else
-							sw.WriteLine($"Сервер получил сообщение {line}");
+						client.Close();
+						break;
 					}
-					catch (Exception ex)
+
+					Console.WriteLine(line);
+
+					if (line.Contains("*"))
 					{
-						Console.WriteLine(ex.Message);
+						var methodParts = line.Split('*');
+						var serverMethod = serverCommandType.GetMethod(methodParts[0]);
+						line = (string)serverMethod.Invoke(this, methodParts.Skip(1)?.ToArray());
+						sw.WriteLine(line);
+						continue;
 					}
-			});
+
+					if (line.Equals("Connect"))
+						sw.WriteLine("Connected");
+					else
+						sw.WriteLine($"Сервер получил сообщение {line}");
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.Message);
+					client.Close();
+				}
 		}
 	}
 
 	public void Stop()
 	{
-		client.Close();
+		listener.Stop();
 		Console.WriteLine("Server stopped");
+	}
+
+	public string CreateFile(string filePath, string fileText)
+	{
+		using (var file = File.CreateText(Path.GetFullPath(filePath)))
+		{
+			file.WriteAsync(fileText);
+		}
+
+		return "Файл создан";
 	}
 }

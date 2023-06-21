@@ -1,14 +1,16 @@
+using System.ComponentModel;
 using Client.Services;
 
 namespace Client.Forms;
 
 public partial class MainForm : Form
 {
-	private ClientService? _clientService;
+	private readonly ClientService? _clientService;
 
 	public MainForm()
 	{
 		InitializeComponent();
+		_clientService = new ClientService(Host.Text, int.Parse(Port.Text));
 		Send.Enabled = false;
 	}
 
@@ -20,21 +22,23 @@ public partial class MainForm : Form
 			return;
 		}
 
-		_clientService = new ClientService(Host.Text, int.Parse(Port.Text));
-		ServerMessageBox.Text += await _clientService.ConnectCommand() + Environment.NewLine;
+		_clientService.Host = Host.Text;
+		_clientService.Port = int.Parse(Port.Text);
 
-		if (_clientService.IsConnected)
-			Send.Enabled = true;
+		ServerMessageBox.Text += await _clientService.Connect() + Environment.NewLine;
+
+		Send.Enabled = _clientService.IsConnected;
 	}
 
 	private async void SendMessage_Click(object sender, EventArgs e)
 	{
-		//if (_clientService == null)
-		//{
-		//	MessageBox.Show("Адрес сервера или порта пустые", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
-		//	return;
-		//}
+		ServerMessageBox.Text +=
+			await _clientService.Send("CreateFile" + "*" + FilePathBox.Text + "*" + OutMessageBox.Text) +
+			Environment.NewLine;
+	}
 
-		ServerMessageBox.Text += await _clientService.Send(OutMessageBox.Text) + Environment.NewLine;
+	protected override void OnClosing(CancelEventArgs e)
+	{
+		ServerMessageBox.Text += _clientService.Disconnect() + Environment.NewLine;
 	}
 }
