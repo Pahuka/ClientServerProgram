@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 
 namespace Client.Services;
 
@@ -37,7 +36,7 @@ public class ClientService
 		}
 		catch (Exception e)
 		{
-				ServerMessage.Text += e.Message + Environment.NewLine;
+			ServerMessage.Text += e.Message + Environment.NewLine;
 		}
 
 		return false;
@@ -48,7 +47,6 @@ public class ClientService
 		Task.Run(() =>
 		{
 			while (true)
-			{
 				try
 				{
 					if (_client?.Connected == true)
@@ -56,21 +54,22 @@ public class ClientService
 						var line = _reader?.ReadLine();
 						if (line != null)
 						{
-							ServerMessage.Invoke(new Action(()=>ServerMessage.Text += line + Environment.NewLine));
+							ServerMessage.Invoke(new Action(() => ServerMessage.Text += line + Environment.NewLine));
 						}
 						else
 						{
 							_client.Close();
-							ServerMessage.Invoke(new Action(() => ServerMessage.Text += "Получен пустой ответ от сервера" + Environment.NewLine));
+							ServerMessage.Invoke(new Action(() =>
+								ServerMessage.Text += "Получен пустой ответ от сервера" + Environment.NewLine));
 						}
 					}
+
 					Task.Delay(10).Wait();
 				}
 				catch (Exception e)
 				{
-						ServerMessage.Invoke(new Action(() => ServerMessage.Text = e.Message + Environment.NewLine));
+					ServerMessage.Invoke(new Action(() => ServerMessage.Text = e.Message + Environment.NewLine));
 				}
-			}
 		});
 	}
 

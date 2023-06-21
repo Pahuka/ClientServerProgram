@@ -23,13 +23,16 @@ public partial class MainForm : Form
 		}
 
 		_clientService.Host = Host.Text;
-		
+
 		int _port;
-		if(int.TryParse(Port.Text, out _port))
+		if (int.TryParse(Port.Text, out _port))
+		{
 			_clientService.Port = _port;
+		}
 		else
 		{
-			MessageBox.Show("Номер порта должен быть заполнен числовым значением", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			MessageBox.Show("Номер порта должен быть заполнен числовым значением", "", MessageBoxButtons.OK,
+				MessageBoxIcon.Error);
 			return;
 		}
 
