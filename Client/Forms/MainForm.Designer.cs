@@ -49,7 +49,7 @@
 			// 
 			// OutMessageBox
 			// 
-			OutMessageBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			OutMessageBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			OutMessageBox.Location = new Point(12, 47);
 			OutMessageBox.Multiline = true;
 			OutMessageBox.Name = "OutMessageBox";

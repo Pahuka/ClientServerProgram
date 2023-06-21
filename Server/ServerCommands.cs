@@ -77,29 +77,11 @@ public class ServerCommands
 
 	public string CreateFile(string filePath, string fileText)
 	{
-		if (!isFileNameValid(filePath))
-			return "Путь к файлу некорректный";
-
 		using (var file = File.CreateText(Path.GetFullPath(filePath)))
 		{
 			file.WriteAsync(fileText);
 		}
 
 		return "Файл создан";
-	}
-
-	private bool isFileNameValid(string fileName)
-	{
-		if ((fileName == null) || (fileName.IndexOfAny(Path.GetInvalidPathChars()) != -1))
-			return false;
-		try
-		{
-			var tempFileInfo = new FileInfo(fileName);
-			return true;
-		}
-		catch (NotSupportedException)
-		{
-			return false;
-		}
 	}
 }

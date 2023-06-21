@@ -16,14 +16,22 @@ public partial class MainForm : Form
 
 	private async void Connect_Click(object sender, EventArgs e)
 	{
-		if (string.IsNullOrEmpty(Host.Text) || string.IsNullOrEmpty(Port.Text))
+		if (string.IsNullOrEmpty(Host.Text))
 		{
-			MessageBox.Show("јдрес сервера или порта пустые", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			MessageBox.Show("јдрес сервера не должен быть пустым", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			return;
 		}
 
 		_clientService.Host = Host.Text;
-		_clientService.Port = int.Parse(Port.Text);
+		
+		int _port;
+		if(int.TryParse(Port.Text, out _port))
+			_clientService.Port = _port;
+		else
+		{
+			MessageBox.Show("Ќомер порта должен быть заполнен числовым значением", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			return;
+		}
 
 		Send.Enabled = await _clientService.Connect();
 	}
