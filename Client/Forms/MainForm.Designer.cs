@@ -49,9 +49,11 @@
 			// 
 			// OutMessageBox
 			// 
+			OutMessageBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			OutMessageBox.Location = new Point(12, 47);
 			OutMessageBox.Multiline = true;
 			OutMessageBox.Name = "OutMessageBox";
+			OutMessageBox.PlaceholderText = "Текст создаваемого файла";
 			OutMessageBox.ScrollBars = ScrollBars.Both;
 			OutMessageBox.Size = new Size(460, 84);
 			OutMessageBox.TabIndex = 1;
@@ -66,16 +68,18 @@
 			// 
 			// ServerMessageBox
 			// 
+			ServerMessageBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			ServerMessageBox.Location = new Point(12, 196);
 			ServerMessageBox.Multiline = true;
 			ServerMessageBox.Name = "ServerMessageBox";
 			ServerMessageBox.ReadOnly = true;
 			ServerMessageBox.ScrollBars = ScrollBars.Both;
-			ServerMessageBox.Size = new Size(460, 57);
+			ServerMessageBox.Size = new Size(460, 153);
 			ServerMessageBox.TabIndex = 4;
 			// 
 			// Send
 			// 
+			Send.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			Send.Location = new Point(382, 152);
 			Send.Name = "Send";
 			Send.Size = new Size(90, 25);
@@ -94,8 +98,10 @@
 			// 
 			// FilePathBox
 			// 
+			FilePathBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			FilePathBox.Location = new Point(12, 12);
 			FilePathBox.Name = "FilePathBox";
+			FilePathBox.PlaceholderText = "Пример \"C:\\Temp\\file.txt\"";
 			FilePathBox.Size = new Size(460, 23);
 			FilePathBox.TabIndex = 7;
 			// 
@@ -103,7 +109,7 @@
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(484, 261);
+			ClientSize = new Size(484, 361);
 			Controls.Add(FilePathBox);
 			Controls.Add(Host);
 			Controls.Add(Send);
@@ -111,9 +117,7 @@
 			Controls.Add(Port);
 			Controls.Add(OutMessageBox);
 			Controls.Add(Connect);
-			MaximizeBox = false;
-			MaximumSize = new Size(500, 300);
-			MinimumSize = new Size(500, 300);
+			MinimumSize = new Size(500, 400);
 			Name = "MainForm";
 			Text = "MainForm";
 			ResumeLayout(false);

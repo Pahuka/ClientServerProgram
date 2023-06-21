@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
 
 namespace Client.Services;
 
@@ -8,17 +9,18 @@ public class ClientService
 	private StreamReader? _reader;
 	private StreamWriter? _writer;
 
-	public ClientService(string host, int port)
+	public ClientService(string host, int port, TextBox serverMessage)
 	{
 		Host = host;
 		Port = port;
+		ServerMessage = serverMessage;
 	}
 
 	public string Host { get; set; }
 	public int Port { get; set; }
-	public bool IsConnected { get; set; }
+	public TextBox ServerMessage { get; set; }
 
-	public async Task<string> Connect()
+	public async Task<bool> Connect()
 	{
 		try
 		{
@@ -27,47 +29,77 @@ public class ClientService
 			await _client.ConnectAsync(Host, Port);
 			_reader = new StreamReader(_client.GetStream());
 			_writer = new StreamWriter(_client.GetStream());
+			Listener();
 			_writer.AutoFlush = true;
-
 			_writer.WriteLine("Connect");
-			IsConnected = true;
+
+			return true;
 		}
 		catch (Exception e)
 		{
-			IsConnected = false;
-			return e.Message;
+				ServerMessage.Text += e.Message + Environment.NewLine;
 		}
 
-		return await _reader?.ReadLineAsync();
+		return false;
 	}
 
-	public string Disconnect()
+	private void Listener()
+	{
+		Task.Run(() =>
+		{
+			while (true)
+			{
+				try
+				{
+					if (_client?.Connected == true)
+					{
+						var line = _reader?.ReadLine();
+						if (line != null)
+						{
+							ServerMessage.Invoke(new Action(()=>ServerMessage.Text += line + Environment.NewLine));
+						}
+						else
+						{
+							_client.Close();
+							ServerMessage.Invoke(new Action(() => ServerMessage.Text += "Получен пустой ответ от сервера" + Environment.NewLine));
+						}
+					}
+					Task.Delay(10).Wait();
+				}
+				catch (Exception e)
+				{
+						ServerMessage.Invoke(new Action(() => ServerMessage.Text = e.Message + Environment.NewLine));
+				}
+			}
+		});
+	}
+
+	public void Disconnect()
 	{
 		try
 		{
-			if (IsConnected)
+			if (_client?.Connected == true)
 				_client.Close();
 		}
 		catch (Exception e)
 		{
-			return e.Message;
+			ServerMessage.Text += e.Message + Environment.NewLine;
 		}
-
-		return "Disconnect";
 	}
 
-	public async Task<string> Send(string msg)
+	public async void Send(string msg)
 	{
 		try
 		{
-			if (IsConnected)
-				_writer?.WriteLineAsync(msg);
+			if (_client.Connected)
+			{
+				await _writer?.WriteLineAsync(msg);
+				ServerMessage.Text += msg + Environment.NewLine;
+			}
 		}
 		catch (Exception e)
 		{
-			return e.Message;
+			ServerMessage.Text += e.Message + Environment.NewLine;
 		}
-
-		return await _reader?.ReadLineAsync();
 	}
 }

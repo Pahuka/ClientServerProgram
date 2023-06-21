@@ -10,7 +10,7 @@ public partial class MainForm : Form
 	public MainForm()
 	{
 		InitializeComponent();
-		_clientService = new ClientService(Host.Text, int.Parse(Port.Text));
+		_clientService = new ClientService(Host.Text, int.Parse(Port.Text), ServerMessageBox);
 		Send.Enabled = false;
 	}
 
@@ -25,20 +25,16 @@ public partial class MainForm : Form
 		_clientService.Host = Host.Text;
 		_clientService.Port = int.Parse(Port.Text);
 
-		ServerMessageBox.Text += await _clientService.Connect() + Environment.NewLine;
-
-		Send.Enabled = _clientService.IsConnected;
+		Send.Enabled = await _clientService.Connect();
 	}
 
-	private async void SendMessage_Click(object sender, EventArgs e)
+	private void SendMessage_Click(object sender, EventArgs e)
 	{
-		ServerMessageBox.Text +=
-			await _clientService.Send("CreateFile" + "*" + FilePathBox.Text + "*" + OutMessageBox.Text) +
-			Environment.NewLine;
+		_clientService.Send("CreateFile" + "*" + FilePathBox.Text + "*" + OutMessageBox.Text);
 	}
 
 	protected override void OnClosing(CancelEventArgs e)
 	{
-		ServerMessageBox.Text += _clientService.Disconnect() + Environment.NewLine;
+		_clientService.Disconnect();
 	}
 }

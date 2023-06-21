@@ -1,39 +1,38 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 
 namespace Server;
 
 public class ServerCommands
 {
-	private static readonly TcpListener listener = new(IPAddress.Any, 5050);
-	private static TcpClient client;
+	private static readonly TcpListener _listener = new(IPAddress.Any, 5050);
+	private static TcpClient _client;
 
 	public void Run()
 	{
-		Console.WriteLine("Server start");
-		listener.Start();
+		Console.WriteLine("Сервер запущен");
+		_listener.Start();
 
 		while (true)
 		{
-			client = listener.AcceptTcpClient();
+			_client = _listener.AcceptTcpClient();
 
-			var sr = new StreamReader(client.GetStream());
-			var sw = new StreamWriter(client.GetStream());
+			var sr = new StreamReader(_client.GetStream());
+			var sw = new StreamWriter(_client.GetStream());
 			sw.AutoFlush = true;
 			var serverCommandType = typeof(ServerCommands);
 
-			while (client.Connected)
+			while (_client.Connected)
 				try
 				{
 					var line = sr.ReadLine();
 
 					if (line == null)
 					{
-						client.Close();
+						_client.Close();
 						break;
 					}
-
-					Console.WriteLine(line);
 
 					if (line.Contains("*"))
 					{
@@ -41,35 +40,66 @@ public class ServerCommands
 						var serverMethod = serverCommandType.GetMethod(methodParts[0]);
 						line = (string)serverMethod.Invoke(this, methodParts.Skip(1)?.ToArray());
 						sw.WriteLine(line);
+						Console.WriteLine($"Создан файл {methodParts[1]}");
 						continue;
 					}
 
 					if (line.Equals("Connect"))
-						sw.WriteLine("Connected");
+					{
+						sw.WriteLine($"Подключен к {_client.Client.LocalEndPoint}");
+						Console.WriteLine($"{_client.Client.RemoteEndPoint} подключился к серверу");
+						continue;
+					}
 					else
 						sw.WriteLine($"Сервер получил сообщение {line}");
+
+					Console.WriteLine(line);
 				}
-				catch (Exception ex)
+				catch (TargetInvocationException e)
 				{
-					Console.WriteLine(ex.Message);
-					client.Close();
+					sw.WriteLine(e.InnerException);
+					Console.WriteLine(e.InnerException);
+					continue;
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e.Message);
+					_client.Close();
 				}
 		}
 	}
 
 	public void Stop()
 	{
-		listener.Stop();
-		Console.WriteLine("Server stopped");
+		_listener.Stop();
+		Console.WriteLine("Сервер остановлен");
 	}
 
 	public string CreateFile(string filePath, string fileText)
 	{
+		if (!isFileNameValid(filePath))
+			return "Путь к файлу некорректный";
+
 		using (var file = File.CreateText(Path.GetFullPath(filePath)))
 		{
 			file.WriteAsync(fileText);
 		}
 
 		return "Файл создан";
+	}
+
+	private bool isFileNameValid(string fileName)
+	{
+		if ((fileName == null) || (fileName.IndexOfAny(Path.GetInvalidPathChars()) != -1))
+			return false;
+		try
+		{
+			var tempFileInfo = new FileInfo(fileName);
+			return true;
+		}
+		catch (NotSupportedException)
+		{
+			return false;
+		}
 	}
 }
